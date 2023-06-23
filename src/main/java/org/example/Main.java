@@ -5,8 +5,12 @@ import org.example.client.Client;
 import java.net.UnknownHostException;
 
 public class Main {
-    public static void main(String[] args) throws InterruptedException{
+    public static void main(String[] args) throws InterruptedException {
         Client client = new Client();
+        while(client.getChannel() == null) {
+        client = new Client();
+        Thread.sleep(1000);
+        }
         Thread.sleep(1000);
         client.sendMsg("config");
         Thread.sleep(1000);

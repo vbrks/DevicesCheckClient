@@ -1,14 +1,11 @@
 package org.example.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.DefaultChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
+import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.util.concurrent.Future;
 
+@Slf4j
 public class ClientHandler extends SimpleChannelInboundHandler<String> {
     private PropertiesHandler propertiesHandler = new PropertiesHandler();
 

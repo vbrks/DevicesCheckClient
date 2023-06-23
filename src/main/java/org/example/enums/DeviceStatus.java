@@ -32,7 +32,7 @@ public enum DeviceStatus {
         try {
             computerName = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         return computerName;
     }

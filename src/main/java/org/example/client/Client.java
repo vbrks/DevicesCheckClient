@@ -12,17 +12,15 @@ import io.netty.handler.logging.LoggingHandler;
 import lombok.Data;
 import org.example.handlers.ClientHandler;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 public class Client {
     private static final String HOST = "localhost";
     private static final int PORT = 4242;
 
-    private volatile Channel channel;
+    private Channel channel;
     public Client() {
-        new Thread(() -> {
+       Thread t = new Thread(() -> {
             EventLoopGroup group = new NioEventLoopGroup();
             try {
                 Bootstrap bootstrap = new Bootstrap();
@@ -46,17 +44,20 @@ public class Client {
                 channelFuture.channel().close().sync();
 
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             } finally {
                 group.shutdownGracefully();
             }
 
-        }).start();
-
+        });
+        t.start();
     }
 
     public void sendMsg(String msg){
-        System.out.println("я в sendMsg " + msg);
         channel.writeAndFlush(msg).syncUninterruptibly();
+    }
+
+    public Channel getChannel() {
+        return channel;
     }
 }

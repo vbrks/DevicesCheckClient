@@ -7,9 +7,6 @@ import org.example.handlers.DevicesHandler;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 
 @Data
@@ -21,14 +18,12 @@ public class EventListener {
 
     public EventListener(Client client) {
         this.client = client;
-        FileInputStream fis;
+
         Properties property = new Properties();
 
-        try {
-            fis = new FileInputStream("src/main/resources/config.properties");
-            property.load(fis);
-            fis.close();
+        try(FileInputStream fis = new FileInputStream("src/main/resources/config.properties")) {
 
+            property.load(fis);
             this.listenDelay = Integer.parseInt(property.getProperty("delay.listen"));
             this.alarmDelay = Integer.parseInt(property.getProperty("delay.alarm"));
 
@@ -50,12 +45,15 @@ public class EventListener {
         Thread.sleep(alarmDelay);
         if (!devicesHandler.isDefaultKeyboardConnected()) {
             client.sendMsg(DeviceStatus.KEYBOARD_DISABLED.msg());
+            Thread.sleep(100);
         }
         if (!devicesHandler.isDefaultMouseConnected()) {
             client.sendMsg(DeviceStatus.MOUSE_DISABLED.msg());
+            Thread.sleep(100);
         }
         if (!devicesHandler.isDefaultHeadphonesConnected()) {
             client.sendMsg(DeviceStatus.HEADPHONES_DISABLED.msg());
+            Thread.sleep(100);
         }
     }
 }
