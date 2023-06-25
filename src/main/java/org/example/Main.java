@@ -2,19 +2,25 @@ package org.example;
 
 import org.example.client.Client;
 
-import java.net.UnknownHostException;
-
 public class Main {
     public static void main(String[] args) throws InterruptedException {
-        Client client = new Client();
-        while(client.getChannel() == null) {
-        client = new Client();
-        Thread.sleep(1000);
-        }
-        Thread.sleep(1000);
-        client.sendMsg("config");
-        Thread.sleep(1000);
+        startEventListener(startClient());
+    }
+
+
+    public static void startEventListener(Client client) throws InterruptedException {
         EventListener eventListener = new EventListener(client);
         eventListener.listen();
+    }
+
+    public static Client startClient() throws InterruptedException {
+        Client client = new Client();
+        if (client.getChannel()==null) {
+            while (client.getChannel() == null) {
+                client = new Client();
+                Thread.sleep(1000);
+            }
+        }
+        return client;
     }
 }

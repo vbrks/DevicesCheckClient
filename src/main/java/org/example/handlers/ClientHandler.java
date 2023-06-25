@@ -2,16 +2,16 @@ package org.example.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import lombok.extern.slf4j.Slf4j;
+import org.example.Main;
 
 
-@Slf4j
 public class ClientHandler extends SimpleChannelInboundHandler<String> {
     private PropertiesHandler propertiesHandler = new PropertiesHandler();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("Connected " + ctx.channel().remoteAddress());
+        ctx.writeAndFlush("config");
     }
 
     @Override
@@ -28,8 +28,9 @@ public class ClientHandler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws InterruptedException {
         cause.printStackTrace();
         ctx.close();
+        Main.startClient();
     }
 }

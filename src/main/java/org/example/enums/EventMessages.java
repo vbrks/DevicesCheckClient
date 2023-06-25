@@ -3,7 +3,7 @@ package org.example.enums;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public enum DeviceStatus {
+public enum EventMessages {
     MOUSE_DISABLED {
         @Override
         public String msg() {

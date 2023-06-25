@@ -2,7 +2,7 @@ package org.example;
 
 import lombok.Data;
 import org.example.client.Client;
-import org.example.enums.DeviceStatus;
+import org.example.enums.EventMessages;
 import org.example.handlers.DevicesHandler;
 
 import java.io.FileInputStream;
@@ -44,15 +44,15 @@ public class EventListener {
     private void alarm(int alarmDelay) throws InterruptedException {
         Thread.sleep(alarmDelay);
         if (!devicesHandler.isDefaultKeyboardConnected()) {
-            client.sendMsg(DeviceStatus.KEYBOARD_DISABLED.msg());
+            client.sendMsg(EventMessages.KEYBOARD_DISABLED.msg());
             Thread.sleep(100);
         }
         if (!devicesHandler.isDefaultMouseConnected()) {
-            client.sendMsg(DeviceStatus.MOUSE_DISABLED.msg());
+            client.sendMsg(EventMessages.MOUSE_DISABLED.msg());
             Thread.sleep(100);
         }
         if (!devicesHandler.isDefaultHeadphonesConnected()) {
-            client.sendMsg(DeviceStatus.HEADPHONES_DISABLED.msg());
+            client.sendMsg(EventMessages.HEADPHONES_DISABLED.msg());
             Thread.sleep(100);
         }
     }
