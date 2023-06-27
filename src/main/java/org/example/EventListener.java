@@ -21,14 +21,14 @@ public class EventListener {
 
         Properties property = new Properties();
 
-        try(FileInputStream fis = new FileInputStream("src/main/resources/config.properties")) {
+        try (FileInputStream fis = new FileInputStream("src/main/resources/config.properties")) {
 
             property.load(fis);
             this.listenDelay = Integer.parseInt(property.getProperty("delay.listen"));
             this.alarmDelay = Integer.parseInt(property.getProperty("delay.alarm"));
 
         } catch (IOException e) {
-            System.err.println("ERROR: File not found!");
+            e.printStackTrace();
         }
     }
 
@@ -45,15 +45,15 @@ public class EventListener {
         Thread.sleep(alarmDelay);
         if (!devicesHandler.isDefaultKeyboardConnected()) {
             client.sendMsg(EventMessages.KEYBOARD_DISABLED.msg());
-            Thread.sleep(100);
+            Thread.sleep(300);
         }
         if (!devicesHandler.isDefaultMouseConnected()) {
             client.sendMsg(EventMessages.MOUSE_DISABLED.msg());
-            Thread.sleep(100);
+            Thread.sleep(300);
         }
         if (!devicesHandler.isDefaultHeadphonesConnected()) {
             client.sendMsg(EventMessages.HEADPHONES_DISABLED.msg());
-            Thread.sleep(100);
+            Thread.sleep(300);
         }
     }
 }

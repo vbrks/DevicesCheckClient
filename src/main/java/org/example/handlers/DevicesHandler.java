@@ -1,7 +1,6 @@
 package org.example.handlers;
 
 import org.example.services.DevicesInfo;
-import org.example.services.UsbInfoParser;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,13 +13,10 @@ public class DevicesHandler {
     private List<String> defaultHeadphones = new ArrayList<>();
 
     public DevicesHandler() {
-        FileInputStream fis;
         Properties property = new Properties();
 
-        try {
-            fis = new FileInputStream("src/main/resources/config.properties");
+        try (FileInputStream fis = new FileInputStream("src/main/resources/config.properties")) {
             property.load(fis);
-            fis.close();
 
             List<String> mousesFromProp = Arrays.asList(property.getProperty("mouses").split(","));
             mousesFromProp.forEach(mouse -> defaultMouses.add(mouse.trim()));
@@ -31,7 +27,7 @@ public class DevicesHandler {
             List<String> headphonesFromProp = Arrays.asList(property.getProperty("headphones").split(","));
             headphonesFromProp.forEach(headphones -> defaultHeadphones.add(headphones.trim()));
         } catch (IOException e) {
-            System.err.println("ERROR: File not found!");
+            e.printStackTrace();
         }
     }
 
@@ -39,9 +35,13 @@ public class DevicesHandler {
         return defaultMouses;
     }
 
-    private List<String> getDefaultKeyboards() {return defaultKeyboards;}
+    private List<String> getDefaultKeyboards() {
+        return defaultKeyboards;
+    }
 
-    private List<String> getDefaultHeadphones() {return defaultHeadphones;}
+    private List<String> getDefaultHeadphones() {
+        return defaultHeadphones;
+    }
 
     public boolean isDefaultMouseConnected() { //проверяем подключена ли стандратная мышь
         List<String> currentDevices = devicesInfo.getConnectedDevices();
@@ -76,16 +76,6 @@ public class DevicesHandler {
 
     public boolean areAllDevicesDefault() {
         return isDefaultMouseConnected() && isDefaultKeyboardConnected() && isDefaultHeadphonesConnected();
-    }
-
-    public List<String> getCurrentDevicesNames() { //парсим имена подключеных девайсов
-        List<String> names = new ArrayList<>();
-        List<String> ids = devicesInfo.getConnectedDevices();
-
-        for (String id : ids) {
-            names.add(UsbInfoParser.parseName(id));
-        }
-        return names;
     }
 
 }

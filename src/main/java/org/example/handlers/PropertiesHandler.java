@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class PropertiesHandler {
-
     public void setProperties(String msg) {
         try (FileWriter writer = new FileWriter("src/main/resources/config.properties", false)) {
             writer.write(msg);
@@ -13,5 +12,4 @@ public class PropertiesHandler {
             e.printStackTrace();
         }
     }
-
 }

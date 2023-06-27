@@ -15,7 +15,8 @@ public class Main {
 
     public static Client startClient() throws InterruptedException {
         Client client = new Client();
-        if (client.getChannel()==null) {
+        Thread.sleep(1000);
+        if (client.getChannel() == null) {
             while (client.getChannel() == null) {
                 client = new Client();
                 Thread.sleep(1000);
