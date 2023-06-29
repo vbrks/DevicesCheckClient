@@ -15,9 +15,8 @@ import org.example.handlers.ClientHandler;
 
 @Data
 public class Client {
-    private static final String HOST = "localhost";
+    private static final String HOST = "10.17.0.42";
     private static final int PORT = 4242;
-
     private Channel channel;
     public Client() {
        Thread t = new Thread(() -> {

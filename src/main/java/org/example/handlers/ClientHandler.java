@@ -5,24 +5,30 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.example.Main;
 
 public class ClientHandler extends SimpleChannelInboundHandler<String> {
-    private PropertiesHandler propertiesHandler = new PropertiesHandler();
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         ctx.writeAndFlush("config");
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String message) {
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        Main.startEventListener(Main.startClient());
+    }
+
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, String message) throws InterruptedException {
         if (message.startsWith("#config_data")) {
-            propertiesHandler.setProperties(message);
+            PropertiesHandler.setProperties(message);
         }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws InterruptedException {
         cause.printStackTrace();
-        ctx.close();
         Main.startEventListener(Main.startClient());
+        ctx.fireChannelUnregistered();
+        ctx.channel().close();
+        ctx.close();
     }
 }

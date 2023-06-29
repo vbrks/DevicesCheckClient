@@ -4,32 +4,32 @@ import lombok.Data;
 import org.example.client.Client;
 import org.example.enums.EventMessages;
 import org.example.handlers.DevicesHandler;
+import org.example.handlers.PropertiesHandler;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.Properties;
 
 @Data
 public class EventListener {
-    DevicesHandler devicesHandler = new DevicesHandler();
-    int listenDelay;
-    int alarmDelay;
-    Client client;
+    private DevicesHandler devicesHandler;
+    private int listenDelay;
+    private int alarmDelay;
+
+
+    private Client client;
 
     public EventListener(Client client) {
+        System.out.println("листнер создан");
+        PropertiesHandler propertiesHandler = new PropertiesHandler();
         this.client = client;
-
-        Properties property = new Properties();
-
-        try (FileInputStream fis = new FileInputStream("src/main/resources/config.properties")) {
-
-            property.load(fis);
-            this.listenDelay = Integer.parseInt(property.getProperty("delay.listen"));
-            this.alarmDelay = Integer.parseInt(property.getProperty("delay.alarm"));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.devicesHandler = new DevicesHandler();
+        this.alarmDelay = propertiesHandler.getAlarmDelay();
+        this.listenDelay = propertiesHandler.getListenDelay();
+        System.out.println(listenDelay);
+        System.out.println(alarmDelay);
     }
 
     public void listen() throws InterruptedException {

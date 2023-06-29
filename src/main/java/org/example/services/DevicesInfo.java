@@ -25,6 +25,7 @@ public class DevicesInfo {
             deviceId = deviceId.substring(deviceId.length() - 9).replace(":", "-").trim();
             devicesIdList.add(deviceId);
         }
+        System.out.println(devicesIdList);
         return devicesIdList;
     }
 }
