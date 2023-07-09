@@ -1,62 +1,136 @@
 package org.example.client;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.*;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
-import lombok.Data;
-import org.example.handlers.ClientHandler;
+import org.example.Main;
+import org.example.handlers.PropertiesHandler;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Timer;
+import java.util.TimerTask;
 
-@Data
 public class Client {
-    private static final String HOST = "10.17.0.42";
-    private static final int PORT = 4242;
+    private Bootstrap bootstrap = new Bootstrap();
+    private SocketAddress address;
     private Channel channel;
-    public Client() {
-       Thread t = new Thread(() -> {
-            EventLoopGroup group = new NioEventLoopGroup();
-            try {
-                Bootstrap bootstrap = new Bootstrap();
-                bootstrap.group(group)
-                        .channel(NioSocketChannel.class)
-                        .handler(new LoggingHandler(LogLevel.INFO))
-                        .handler(new ChannelInitializer<SocketChannel>() {
-                            @Override
-                            protected void initChannel(SocketChannel ch) throws ExceptionInInitializerError {
-                                ChannelPipeline pipeline = ch.pipeline();
-                                pipeline.addLast(new StringDecoder());
-                                pipeline.addLast(new StringEncoder());
-                                pipeline.addLast(new ClientHandler());
-                            }
-                        });
+    private Timer timer;
 
+    public Client(String host, int port, Timer timer) {
+        this(new InetSocketAddress(host, port), timer);
+    }
 
-                channel = bootstrap.connect(HOST, PORT).sync().channel();
-                ChannelFuture channelFuture = channel.closeFuture().sync();
-                channelFuture.channel().closeFuture().sync();
-                channelFuture.channel().close().sync();
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } finally {
-                group.shutdownGracefully();
+    public Client(SocketAddress address, Timer timer) {
+        this.address = address;
+        this.timer = timer;
+        bootstrap.group(new NioEventLoopGroup());
+        bootstrap.channel(NioSocketChannel.class);
+        bootstrap.option(ChannelOption.SO_KEEPALIVE, true);
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel ch) {
+                ch.pipeline().addLast(createMessageHandler());
             }
-
         });
-        t.start();
+        scheduleConnect(10);
     }
 
-    public void sendMsg(String msg){
-        channel.writeAndFlush(msg).syncUninterruptibly();
+    public void sendMsg(String msg) {
+        if (channel != null && channel.isActive()) {
+            ByteBuf buf = channel.alloc().buffer().writeBytes(msg.getBytes());
+            channel.writeAndFlush(buf);
+        }
     }
 
-    public Channel getChannel() {
-        return channel;
+    private void doConnect() {
+        try {
+            ChannelFuture f = bootstrap.connect(address);
+            f.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    if (!future.isSuccess()) {
+                        future.channel().close();
+                        bootstrap.connect(address).addListener(this);
+                    } else {
+                        channel = future.channel();
+                        addCloseDetectListener(channel);
+                        connectionEstablished();
+                    }
+                }
+
+                private void addCloseDetectListener(Channel channel) {
+                    channel.closeFuture().addListener(new ChannelFutureListener() {
+                        @Override
+                        public void operationComplete(ChannelFuture future)
+                                throws Exception {
+                            connectionLost();
+                            scheduleConnect(5);
+                        }
+                    });
+
+                }
+            });
+        } catch (Exception ex) {
+            scheduleConnect(1000);
+        }
+    }
+
+    private void scheduleConnect(long millis) {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                doConnect();
+            }
+        }, millis);
+    }
+
+    private ChannelHandler createMessageHandler() {
+        return new ChannelInboundHandlerAdapter() {
+            @Override
+            public void channelRead(ChannelHandlerContext ctx, Object msg) {
+                ByteBuf buf = (ByteBuf) msg;
+                int n = buf.readableBytes();
+                if (n > 0) {
+                    byte[] b = new byte[n];
+                    buf.readBytes(b);
+                    handleMessage(new String(b));
+                }
+            }
+        };
+    }
+
+    public void handleMessage(String msg) {
+        if (msg.startsWith("#config_data")) {
+            PropertiesHandler.setProperties(msg);
+            System.out.println("Config created");
+
+            Thread t = new Thread(() -> {
+                try {
+                    Main.startEventListener(this);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            t.start();
+        }
+    }
+
+    public void connectionLost() {
+        System.out.println("connectionLost()");
+    }
+
+    public void connectionEstablished() {
+        sendMsg("config");
     }
 }
