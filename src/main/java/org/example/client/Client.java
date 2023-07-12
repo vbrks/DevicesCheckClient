@@ -13,7 +13,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.example.Main;
+import org.example.EventListener;
 import org.example.handlers.PropertiesHandler;
 
 import java.net.InetSocketAddress;
@@ -26,7 +26,7 @@ public class Client {
     private SocketAddress address;
     private Channel channel;
     private Timer timer;
-
+    private EventListener eventListener;
     public Client(String host, int port, Timer timer) {
         this(new InetSocketAddress(host, port), timer);
     }
@@ -58,7 +58,7 @@ public class Client {
             ChannelFuture f = bootstrap.connect(address);
             f.addListener(new ChannelFutureListener() {
                 @Override
-                public void operationComplete(ChannelFuture future) throws Exception {
+                public void operationComplete(ChannelFuture future) {
                     if (!future.isSuccess()) {
                         future.channel().close();
                         bootstrap.connect(address).addListener(this);
@@ -70,15 +70,10 @@ public class Client {
                 }
 
                 private void addCloseDetectListener(Channel channel) {
-                    channel.closeFuture().addListener(new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture future)
-                                throws Exception {
-                            connectionLost();
-                            scheduleConnect(5);
-                        }
+                    channel.closeFuture().addListener((ChannelFutureListener) future -> {
+                        connectionLost();
+                        scheduleConnect(1000);
                     });
-
                 }
             });
         } catch (Exception ex) {
@@ -113,20 +108,18 @@ public class Client {
     public void handleMessage(String msg) {
         if (msg.startsWith("#config_data")) {
             PropertiesHandler.setProperties(msg);
-            System.out.println("Config created");
-
-            Thread t = new Thread(() -> {
-                try {
-                    Main.startEventListener(this);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            });
-            t.start();
+            System.out.println("Config has been created");
+            try {
+               eventListener = new EventListener(this);
+               eventListener.listen();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     public void connectionLost() {
+        eventListener.stop();
         System.out.println("connectionLost()");
     }
 

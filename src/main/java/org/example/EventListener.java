@@ -10,6 +10,7 @@ public class EventListener {
     private int listenDelay;
     private int alarmDelay;
     private Client client;
+    private boolean isInterrupted;
 
     public EventListener(Client client) {
         PropertiesHandler propertiesHandler = new PropertiesHandler();
@@ -17,12 +18,13 @@ public class EventListener {
         this.devicesHandler = new DevicesHandler();
         this.alarmDelay = propertiesHandler.getAlarmDelay();
         this.listenDelay = propertiesHandler.getListenDelay();
+        isInterrupted = false;
         System.out.println(listenDelay);
         System.out.println(alarmDelay);
     }
 
     public void listen() throws InterruptedException {
-        while (true) {
+        while (!isInterrupted) {
             if (!devicesHandler.areAllDevicesDefault()) {
                 alarm(alarmDelay);
             }
@@ -47,8 +49,9 @@ public class EventListener {
         }
         } catch (InterruptedException e) {
             e.printStackTrace();
-            Thread.currentThread().interrupt();
-            Main.startEventListener(client);
         }
+    }
+    public void stop(){
+        isInterrupted = true;
     }
 }
