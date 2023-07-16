@@ -21,6 +21,8 @@ import java.net.SocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static org.example.enums.EventMessages.PC_NAME;
+
 public class Client {
     private Bootstrap bootstrap = new Bootstrap();
     private SocketAddress address;
@@ -108,7 +110,7 @@ public class Client {
     public void handleMessage(String msg) {
         if (msg.startsWith("#config_data")) {
             PropertiesHandler.setProperties(msg);
-            System.out.println("Config has been created");
+            System.out.println("Config has been created.");
             try {
                eventListener = new EventListener(this);
                eventListener.listen();
@@ -120,10 +122,10 @@ public class Client {
 
     public void connectionLost() {
         eventListener.stop();
-        System.out.println("connectionLost()");
+        System.out.println("Connection lost");
     }
 
     public void connectionEstablished() {
-        sendMsg("config");
+        sendMsg("config_" + PC_NAME.msg());
     }
 }

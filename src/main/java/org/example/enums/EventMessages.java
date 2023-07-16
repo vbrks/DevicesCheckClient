@@ -23,6 +23,11 @@ public enum EventMessages {
         public String msg() {
             return "k_disabled_" + getPcName();
         }
+    },
+    PC_NAME {
+        @Override
+        public String msg() {
+            return getPcName();        }
     };
 
     public abstract String msg();

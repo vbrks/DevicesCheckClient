@@ -18,7 +18,7 @@ public class EventListener {
         this.devicesHandler = new DevicesHandler();
         this.alarmDelay = propertiesHandler.getAlarmDelay();
         this.listenDelay = propertiesHandler.getListenDelay();
-        isInterrupted = false;
+        this.isInterrupted = false;
         System.out.println(listenDelay);
         System.out.println(alarmDelay);
     }

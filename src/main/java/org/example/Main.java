@@ -6,6 +6,6 @@ import java.util.Timer;
 
 public class Main {
     public static void main(String[] args){
-       Client client = new Client("localhost", 4242, new Timer());
+       Client client = new Client(args[0], 4242, new Timer());
     }
 }

@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.Properties;
 
 public class PropertiesHandler {
-    static String path = new File(PropertiesHandler.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent();
-    private static final String CONFIG_PROP_PATH = path + "/config.properties";
+    private static final String PATH = new File(PropertiesHandler.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent();
+    private static final String CONFIG_PROP_PATH = PATH + "/config.properties";
     public static void setProperties(String msg) {
         try (FileWriter writer = new FileWriter(CONFIG_PROP_PATH, false)) {
             writer.write(msg);
